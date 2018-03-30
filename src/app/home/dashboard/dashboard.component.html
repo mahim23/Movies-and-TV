@@ -1,3 +1,56 @@
-<p>
-  dashboard works!
-</p>
+<!--<div>-->
+  <!--<mat-form-field>-->
+
+    <!--<mat-select placeholder="Select Genre" [(value)]="selectedGenre" (selectionChange)="applyFilter()">-->
+      <!--<mat-option *ngFor="let genre of genres" [value]="genre">-->
+        <!--{{ genre }}-->
+      <!--</mat-option>-->
+    <!--</mat-select>-->
+  <!--</mat-form-field>-->
+<!--</div>-->
+
+<div class="mat-elevation-z8">
+  <form style="margin: 0 16px -16px 16px; display: flex">
+    <div style="display: flex; align-items: center; margin-right: 16px"><strong>Select Genre:</strong></div>
+    <mat-form-field>
+      <mat-select [(value)]="selectedGenre" (selectionChange)="applyFilter()">
+        <mat-option *ngFor="let genre of genres" [value]="genre">
+          {{ genre }}
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
+  </form>
+
+  <mat-table #table [dataSource]="dataSource" matSort>
+
+    <ng-container matColumnDef="name">
+      <mat-header-cell *matHeaderCellDef mat-sort-header> Name </mat-header-cell>
+      <mat-cell *matCellDef="let element"> {{element.name}} </mat-cell>
+    </ng-container>
+
+    <ng-container matColumnDef="releaseDate">
+      <mat-header-cell *matHeaderCellDef mat-sort-header> Release Date </mat-header-cell>
+      <mat-cell *matCellDef="let element"> {{element.releaseDate}} </mat-cell>
+    </ng-container>
+
+    <ng-container matColumnDef="rating">
+      <mat-header-cell *matHeaderCellDef mat-sort-header> Rating </mat-header-cell>
+      <mat-cell *matCellDef="let element"> {{element.rating}} </mat-cell>
+    </ng-container>
+
+    <ng-container matColumnDef="link">
+      <mat-header-cell *matHeaderCellDef> Link </mat-header-cell>
+      <mat-cell *matCellDef="let element">
+        <button mat-button (click)="goToMovie(element.link)">Link</button>
+      </mat-cell>
+    </ng-container>
+
+    <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
+    <mat-row *matRowDef="let row; columns: displayedColumns;"></mat-row>
+  </mat-table>
+  <mat-paginator #paginator
+                 [pageSize]="pageSizeOptions[0]"
+                 [pageSizeOptions]="pageSizeOptions"
+                 [showFirstLastButtons]="true">
+  </mat-paginator>
+</div>
