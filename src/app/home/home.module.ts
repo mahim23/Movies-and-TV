@@ -3,13 +3,14 @@ import { CommonModule } from '@angular/common';
 import { DashboardComponent } from './dashboard/dashboard.component';
 import { RouterModule, Router } from '@angular/router';
 import { MatTableModule } from '@angular/material/table';
-import {MatButtonModule, MatExpansionModule, MatInputModule, MatPaginatorModule, MatSelectModule, MatSortModule} from '@angular/material';
+import {MatButtonModule, MatInputModule, MatPaginatorModule, MatSelectModule, MatSortModule, MatTabsModule} from '@angular/material';
+
 
 @NgModule({
   imports: [
     CommonModule,
     MatTableModule, MatButtonModule, MatSortModule, MatInputModule, MatPaginatorModule, MatSelectModule,
-    MatExpansionModule,
+    MatTabsModule,
     RouterModule.forChild([{
       path: '',
       component: DashboardComponent
