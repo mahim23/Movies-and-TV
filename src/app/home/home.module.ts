@@ -16,6 +16,7 @@ import {FormsModule} from '@angular/forms';
 import {HttpModule} from '@angular/http';
 import {AuthService} from 'app/services/auth.service';
 import {MoviesAppApiService} from 'app/services/movies-app-api.service';
+import { DashboardTvComponent } from './dashboard-tv/dashboard-tv.component';
 
 
 @NgModule({
@@ -27,12 +28,20 @@ import {MoviesAppApiService} from 'app/services/movies-app-api.service';
     MatTabsModule, MatIconModule,
     RouterModule.forChild([{
       path: '',
-      component: DashboardComponent
-    }])
+      pathMatch: 'full',
+      redirectTo: 'movie'
+    }, {
+      path: 'movie',
+      component: DashboardComponent,
+    }, {
+      path: 'tv',
+      component: DashboardTvComponent
+      }])
   ],
-  declarations: [DashboardComponent],
+  declarations: [DashboardComponent, DashboardTvComponent],
   providers: [AuthService, MoviesAppApiService]
 })
+
 export class HomeModule {
   constructor(private router: Router) { }
 }

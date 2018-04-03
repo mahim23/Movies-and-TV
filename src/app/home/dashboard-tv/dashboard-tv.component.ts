@@ -1,22 +1,22 @@
 import {ChangeDetectorRef, Component, OnInit, ViewChild} from '@angular/core';
-import {MatTableDataSource, MatSort, MatPaginator} from '@angular/material';
-import {Http} from '@angular/http';
 import {Router} from '@angular/router';
+import {Http} from '@angular/http';
+import {MatPaginator, MatTableDataSource, MatSort} from '@angular/material';
 import {AuthService} from '../../services/auth.service';
 import {MoviesAppApiService} from '../../services/movies-app-api.service';
 
 @Component({
-  selector: 'app-dashboard',
-  templateUrl: './dashboard.component.html',
-  styleUrls: ['./dashboard.component.css']
+  selector: 'app-dashboard-tv',
+  templateUrl: './dashboard-tv.component.html',
+  styleUrls: ['./dashboard-tv.component.css']
 })
-export class DashboardComponent implements OnInit {
+export class DashboardTvComponent implements OnInit {
 
   username = '';
   user_details;
-  displayedColumns = ['name', 'releaseDate', 'rating', 'genre', 'like'];
+  displayedColumns = ['name', 'firstAirDate', 'rating', 'genre', 'like'];
   favoritesArray = [];
-  movies;
+  tv;
   favorites;
   pageSizeOptions = [10, 20, 50];
   genres;
@@ -33,18 +33,19 @@ export class DashboardComponent implements OnInit {
     }
     this.api.getUserDetails().subscribe(res => {
       this.user_details = res.json();
-      this.favoritesArray = this.user_details.favorite_movies;
-      this.api.getMovieGenres().subscribe(res => {
+      this.favoritesArray = this.user_details.favorite_tv;
+      this.api.getTVGenres().subscribe(res => {
         const g = res.json().genres;
         g.forEach(elem => this.genres_list.push(elem.name));
         this.genres = g;
-        this.processMovies();
+        console.log(g);
+        this.processTV();
       });
     }, err => {
       console.log('User not found');
       router.navigateByUrl('/auth');
     });
-    this.movies = new MatTableDataSource([]);
+    this.tv = new MatTableDataSource([]);
     this.favorites = new MatTableDataSource([]);
   }
 
@@ -63,55 +64,55 @@ export class DashboardComponent implements OnInit {
     return g;
   }
 
-  processMovies() {
+  processTV() {
     const list = [];
     const fav_list = [];
-    const min_vote_count = 1500;
-    const min_vote_average = 7.0;
-    this.api.getMovieList(min_vote_count, min_vote_average, 1).subscribe(res => {
-        const pages = res.json().total_pages;
-        for (let i = 1; i <= pages; i++) {
-          this.api.getMovieList(min_vote_count, min_vote_average, i).subscribe(res => {
-            const results = res.json().results;
-            if (results) {
-              results.forEach((movie) => {
-                const liked = this.favoritesArray.indexOf(movie.id.toString()) !== -1;
-                const m = {
-                  movie_id: movie.id,
-                  name: movie.original_title,
-                  rating: movie.vote_average,
-                  releaseDate: movie.release_date,
-                  liked: liked,
-                  genre: this.genre(movie.genre_ids)
-                };
-                if (liked) {
-                  fav_list.push(m);
-                }
-                list.push(m);
-              });
-              this.movies.data = list;
-              this.favorites.data = fav_list;
-            }
-          });
-        }
-        console.log(fav_list);
+    const min_vote_count = 250;
+    const min_vote_average = 5;
+    this.api.getTVList(min_vote_count, min_vote_average, 1).subscribe(res => {
+      const pages = res.json().total_pages;
+      for (let i = 1; i <= pages; i++) {
+        this.api.getTVList(min_vote_count, min_vote_average, i).subscribe(res => {
+          const results = res.json().results;
+          if (results) {
+            results.forEach((tv) => {
+              const liked = this.favoritesArray.indexOf(tv.id.toString()) !== -1;
+              const m = {
+                tv_id: tv.id,
+                name: tv.original_name,
+                rating: tv.vote_average,
+                firstAirDate: tv.first_air_date,
+                liked: liked,
+                genre: this.genre(tv.genre_ids)
+              };
+              if (liked) {
+                fav_list.push(m);
+              }
+              list.push(m);
+            });
+            this.tv.data = list;
+            this.favorites.data = fav_list;
+          }
+        });
+      }
+      console.log(res.json());
     });
   }
 
-  likeMovie(movie) {
-    return this.api.likeMovie(movie.movie_id).subscribe(res => {
+  likeTV(tv) {
+    return this.api.likeTV(tv.tv_id).subscribe(res => {
       console.log(res);
-      if (movie.liked) {
-        movie.liked = false;
+      if (tv.liked) {
+        tv.liked = false;
         const list = [];
         this.favorites.data.forEach((m) => {
-          if (m.movie_id !== movie.movie_id) { list.push(m); }
+          if (m.tv_id !== tv.tv_id) { list.push(m); }
         });
         this.favorites.data = list;
       } else {
-        movie.liked = true;
+        tv.liked = true;
         const list = this.favorites.data;
-        list.push(movie);
+        list.push(tv);
         this.favorites.data = list;
       }
     }, err => {
@@ -120,8 +121,8 @@ export class DashboardComponent implements OnInit {
   }
 
   ngAfterViewInit() {
-    this.movies.sort = this.sortMovie;
-    this.movies.paginator = this.paginatorMovie;
+    this.tv.sort = this.sortMovie;
+    this.tv.paginator = this.paginatorMovie;
     this.favorites.sort = this.sortFav;
     this.favorites.paginator = this.paginatorFav;
     this.cdRef.detectChanges();
@@ -129,7 +130,7 @@ export class DashboardComponent implements OnInit {
 
   applyFilter(type) {
     if (type === 'genre') {
-      this.movies.filterPredicate = (data, filter) => {
+      this.tv.filterPredicate = (data, filter) => {
         for (let i = 0; i < data.genre.length; i++) {
           if (data.genre[i].toLowerCase() === filter) { return true; }
         }
@@ -139,22 +140,22 @@ export class DashboardComponent implements OnInit {
       let genre = this.selectedGenre.trim();
       genre = genre.toLowerCase();
       if (genre !== 'all') {
-        this.movies.filter = genre;
+        this.tv.filter = genre;
       } else {
-        this.movies.filter = '';
+        this.tv.filter = '';
       }
     } else {
-      this.movies.filterPredicate = (data, filter) => {
+      this.tv.filterPredicate = (data, filter) => {
         return data.name.toLowerCase().indexOf(filter.toLocaleLowerCase()) !== -1;
       };
       console.log(this.searchQuery);
-      this.movies.filter = this.searchQuery.trim().toLocaleLowerCase();
+      this.tv.filter = this.searchQuery.trim().toLocaleLowerCase();
     }
   }
 
   goToMovie(link) {
     console.log(link);
-    console.log(this.movies);
+    console.log(this.tv);
   }
 
   ngOnInit() {

@@ -61,8 +61,8 @@ export class MoviesAppApiService {
 
   getTVList(min_vote_count, min_vote_average, pageNo) {
     return this.http.get(this.TMDB_URL + 'discover/tv?api_key=' + this.API_KEY + 'language=' +
-      'en-US&sort_by=original_name.desc&page=' + pageNo + '&timezone=America%2FNew_York&vote_average.gte=' +
-      min_vote_average + '&vote_count.gte=2' + min_vote_count + '&include_null_first_air_dates=false&' +
+      'en-US&sort_by=popularity.desc&page=' + pageNo + '&timezone=America%2FNew_York&vote_average.gte=' +
+      min_vote_average + '&vote_count.gte=' + min_vote_count + '&include_null_first_air_dates=false&' +
       'with_original_language=en');
   }
 }
