@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import {FormControl, FormGroup, Validators, FormBuilder} from '@angular/forms';
 import {Router} from '@angular/router';
+import {Http} from '@angular/http';
 
 @Component({
   selector: 'app-auth',
@@ -10,13 +11,26 @@ import {Router} from '@angular/router';
 
 export class AuthComponent implements OnInit {
   signup_form: FormGroup;
-  constructor(private router: Router) {}
+  constructor(private router: Router, private http: Http) {}
 
   signup() {
     if (this.signup_form.valid) {
       console.log(this.signup_form.value);
-      localStorage.setItem('username', this.signup_form.value.username);
-      this.router.navigateByUrl('/dashboard');
+      const formData = new FormData();
+      const signup_data = {
+        username: this.signup_form.value.username,
+        password: this.signup_form.value.password,
+        first_name: this.signup_form.value.firstName,
+        last_name: this.signup_form.value.lastName,
+        email: this.signup_form.value.email
+      };
+      formData.append('user_details', JSON.stringify(signup_data));
+      this.http.post('http://localhost:8000/api/signup', formData).subscribe(res => {
+        localStorage.setItem('username', this.signup_form.value.username);
+        this.router.navigateByUrl('/dashboard');
+      }, err => {
+        console.log('Username already exists');
+      });
     } else {
       console.log('Invalid');
     }

@@ -1,5 +1,7 @@
 import {ChangeDetectorRef, Component, OnInit, ViewChild} from '@angular/core';
 import {MatTableDataSource, MatSort, MatPaginator} from '@angular/material';
+import {Http} from '@angular/http';
+import {Router} from '@angular/router';
 
 @Component({
   selector: 'app-dashboard',
@@ -7,62 +9,40 @@ import {MatTableDataSource, MatSort, MatPaginator} from '@angular/material';
   styleUrls: ['./dashboard.component.css']
 })
 export class DashboardComponent implements OnInit {
-  displayedColumns = ['name', 'releaseDate', 'rating', 'genre', 'link', 'like'];
-  moviesArray;
-  favoritesArray;
+  username = '';
+  user_details;
+  displayedColumns = ['name', 'releaseDate', 'rating', 'genre', 'like'];
+  favoritesArray = [];
   movies;
   favorites;
-  pageSizeOptions = [10, 4, 2];
-  genres = ['All', 'Comedy', 'Horror', 'SciFi'];
+  pageSizeOptions = [10, 20, 50];
+  genres;
+  genres_list = ['All'];
   selectedGenre = 'All';
-  constructor(private cdRef: ChangeDetectorRef) {
-    this.moviesArray = [
-      {
-        movie_id: 100,
-        name: 'Movie 1',
-        releaseDate: '20/20/2000',
-        rating: 9,
-        link: 'link1',
-        genre: 'Comedy'
-      },
-      {
-        movie_id: 101,
-        name: 'Movie 2',
-        releaseDate: '20/20/2000',
-        rating: 8,
-        link: 'link2',
-        genre: 'Horror'
-      },
-      {
-        movie_id: 102,
-        name: 'Movie 3',
-        releaseDate: '20/20/2000',
-        rating: 6,
-        link: 'link3',
-        genre: 'SciFi'
-      },
-      {
-        movie_id: 103,
-        name: 'Movie 4',
-        releaseDate: '20/20/2000',
-        rating: 7,
-        link: 'link4',
-        genre: 'Horror'
-      },
-      {
-        movie_id: 104,
-        name: 'Movie 5',
-        releaseDate: '20/20/2000',
-        rating: 9,
-        link: 'link5',
-        genre: 'Comedy'
-      }
-    ];
+  searchQuery = '';
+  API_KEY = 'a7d5b9030fe407574db51d1001cb8c90&';
+  constructor(private cdRef: ChangeDetectorRef, private http: Http, private router: Router) {
 
-    this.favoritesArray = [100, 102, 103];
-    this.moviesArray = this.processMovies();
-    this.movies = new MatTableDataSource(this.moviesArray);
-    this.favorites = new MatTableDataSource(this.favoritesList());
+    this.username = localStorage.getItem('username');
+    if (this.username === null) {
+      router.navigateByUrl('/auth');
+    }
+    this.http.get('http://localhost:8000/api/user/' + this.username).subscribe(res => {
+      this.user_details = res.json();
+      this.favoritesArray = this.user_details.favorites;
+      this.http.get('https://api.themoviedb.org/3/genre/movie/list?api_key=' + this.API_KEY +
+        'language=en-US').subscribe(res => {
+        const g = res.json().genres;
+        g.forEach(elem => this.genres_list.push(elem.name));
+        this.genres = g;
+        this.processMovies();
+      });
+    }, err => {
+      console.log('User not found');
+      router.navigateByUrl('/auth');
+    });
+    this.movies = new MatTableDataSource([]);
+    this.favorites = new MatTableDataSource([]);
   }
 
   @ViewChild('movieSort') sortMovie: MatSort;
@@ -70,58 +50,110 @@ export class DashboardComponent implements OnInit {
   @ViewChild('favoritesSort') sortFav: MatSort;
   @ViewChild('paginatorFav') paginatorFav: MatPaginator;
 
-  processMovies() {
-    const list = [];
-    this.moviesArray.forEach((movie) => {
-      movie.liked = this.favoritesArray.indexOf(movie.movie_id) !== -1;
-      list.push(movie);
-    });
-    return list;
+  genre(ids) {
+    const g = [];
+    for (let i = 0; i < this.genres.length; i++) {
+      if (ids.indexOf(this.genres[i].id) !== -1) {
+        g.push(this.genres[i].name);
+      }
+    }
+    return g;
   }
 
-  favoritesList() {
-    const favList = [];
-    this.moviesArray.forEach((movie) => {
-      if (movie.liked) { favList.push(movie); }
+  processMovies() {
+    const list = [];
+    const fav_list = [];
+    const min_vote_count = 1500;
+    const min_vote_average = 7.0;
+    this.http.get('https://api.themoviedb.org/3/discover/movie?api_key=' + this.API_KEY + 'language=en-US&' +
+      'sort_by=original_title.asc&include_adult=false&include_video=false&page=1&vote_count.gte=' + min_vote_count
+      + '&vote_average.gte=' + min_vote_average + '&with_original_language=en').subscribe(res => {
+        const pages = res.json().total_pages;
+        for (let i = 1; i <= pages; i++) {
+          this.http.get('https://api.themoviedb.org/3/discover/movie?api_key=' + this.API_KEY +
+            'language=en-US&sort_by=original_title.asc&include_adult=false&include_video=false&page=' + i +
+            '&vote_count.gte=' + min_vote_count + '&vote_average.gte=' + min_vote_average +
+            '&with_original_language=en').subscribe(res => {
+            const results = res.json().results;
+            if (results) {
+              results.forEach((movie) => {
+                const liked = this.favoritesArray.indexOf(movie.id.toString()) !== -1;
+                const m = {
+                  movie_id: movie.id,
+                  name: movie.original_title,
+                  rating: movie.vote_average,
+                  releaseDate: movie.release_date,
+                  liked: liked,
+                  genre: this.genre(movie.genre_ids)
+                };
+                if (liked) {
+                  fav_list.push(m);
+                }
+                list.push(m);
+              });
+              this.movies.data = list;
+              this.favorites.data = fav_list;
+            }
+          });
+        }
+        console.log(fav_list);
     });
-    return favList;
   }
 
   likeMovie(movie) {
-    if (movie.liked) {
-      movie.liked = false;
-      const list = [];
-      this.favorites.data.forEach((m) => {
-        if (m.movie_id !== movie.movie_id) { list.push(m); }
-      });
-      this.favorites.data = list;
-    } else {
-      movie.liked = true;
-      const list = this.favorites.data;
-      list.push(movie);
-      this.favorites.data = list;
-    }
+    const formData = new FormData();
+    formData.append('username', this.username);
+    formData.append('movie_id', movie.movie_id);
+    return this.http.post('http://localhost:8000/api/like', formData).subscribe(res => {
+      console.log(res);
+      if (movie.liked) {
+        movie.liked = false;
+        const list = [];
+        this.favorites.data.forEach((m) => {
+          if (m.movie_id !== movie.movie_id) { list.push(m); }
+        });
+        this.favorites.data = list;
+      } else {
+        movie.liked = true;
+        const list = this.favorites.data;
+        list.push(movie);
+        this.favorites.data = list;
+      }
+    }, err => {
+      console.log('Could not add to favorites');
+    });
   }
 
   ngAfterViewInit() {
     this.movies.sort = this.sortMovie;
-    this.movies.filterPredicate = (data, filter) => {
-      return data.genre.toLowerCase() === filter;
-    };
     this.movies.paginator = this.paginatorMovie;
     this.favorites.sort = this.sortFav;
     this.favorites.paginator = this.paginatorFav;
     this.cdRef.detectChanges();
   }
 
-  applyFilter() {
-    console.log(this.selectedGenre);
-    let genre = this.selectedGenre.trim();
-    genre = genre.toLowerCase();
-    if (genre !== 'all') {
-      this.movies.filter = genre;
+  applyFilter(type) {
+    if (type === 'genre') {
+      this.movies.filterPredicate = (data, filter) => {
+        for (let i = 0; i < data.genre.length; i++) {
+          if (data.genre[i].toLowerCase() === filter) { return true; }
+        }
+        return false;
+      };
+      console.log(this.selectedGenre);
+      let genre = this.selectedGenre.trim();
+      genre = genre.toLowerCase();
+      if (genre !== 'all') {
+        this.movies.filter = genre;
+      } else {
+        this.movies.filter = '';
+      }
     } else {
-      this.movies.filter = '';
+      this.movies.filterPredicate = (data, filter) => {
+        return data.name.toLowerCase().indexOf(filter.toLocaleLowerCase()) !== -1;
+      };
+      console.log(this.searchQuery);
+      this.movies.filter = this.searchQuery.trim().toLocaleLowerCase();
     }
   }
 
@@ -134,4 +166,3 @@ export class DashboardComponent implements OnInit {
   }
 
 }
-

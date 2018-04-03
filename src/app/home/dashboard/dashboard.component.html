@@ -1,68 +1,67 @@
-<!--<div>-->
-  <!--<mat-form-field>-->
-
-    <!--<mat-select placeholder="Select Genre" [(value)]="selectedGenre" (selectionChange)="applyFilter()">-->
-      <!--<mat-option *ngFor="let genre of genres" [value]="genre">-->
-        <!--{{ genre }}-->
-      <!--</mat-option>-->
-    <!--</mat-select>-->
-  <!--</mat-form-field>-->
-<!--</div>-->
-
 <div class="mat-elevation-z8">
   <mat-tab-group>
-    <mat-tab label="Search">
+    <mat-tab label="All">
       <div>
-        <form style="margin: 0 16px -16px 16px; display: flex">
-          <div style="display: flex; align-items: center; margin-right: 16px"><strong>Filter By Genre:</strong></div>
-          <mat-form-field>
-            <mat-select [(value)]="selectedGenre" (selectionChange)="applyFilter()">
-              <mat-option *ngFor="let genre of genres" [value]="genre">
-                {{ genre }}
-              </mat-option>
-            </mat-select>
-          </mat-form-field>
-        </form>
+        <div style="margin: 0 16px -16px 16px; display: flex; justify-content: space-between;">
+          <div style="width: 30%;">
+            <mat-form-field style="width: 70%">
+              <input matInput placeholder="Search for a movie" [(ngModel)]="searchQuery" (keyup)="applyFilter('search')">
+              <button mat-button *ngIf="searchQuery" matSuffix mat-icon-button aria-label="Clear"
+                      (click)="searchQuery=''; applyFilter('search')">
+                <mat-icon>close</mat-icon>
+              </button>
+            </mat-form-field>
+            <button mat-icon-button (click)="applyFilter('search')"><mat-icon>search</mat-icon></button>
+          </div>
+          <div style="display: flex;">
+            <div style="display: flex; align-items: center; margin-right: 16px">Filter By Genre:</div>
+            <mat-form-field>
+              <mat-select [(value)]="selectedGenre" (selectionChange)="applyFilter('genre')">
+                <mat-option *ngFor="let genre of genres_list" [value]="genre">
+                  {{ genre }}
+                </mat-option>
+              </mat-select>
+            </mat-form-field>
+          </div>
+        </div>
 
         <mat-table #table [dataSource]="movies" #movieSort="matSort" matSort>
-
           <ng-container matColumnDef="name">
-            <mat-header-cell *matHeaderCellDef mat-sort-header> Name </mat-header-cell>
-            <mat-cell *matCellDef="let element"> {{element.name}} </mat-cell>
+            <mat-header-cell *matHeaderCellDef style="flex: 0 0 30%;" mat-sort-header> Name </mat-header-cell>
+            <mat-cell *matCellDef="let element" style="flex: 0 0 30%;"> {{element.name}} </mat-cell>
           </ng-container>
 
           <ng-container matColumnDef="releaseDate">
-            <mat-header-cell *matHeaderCellDef mat-sort-header> Release Date </mat-header-cell>
-            <mat-cell *matCellDef="let element"> {{element.releaseDate}} </mat-cell>
+            <mat-header-cell *matHeaderCellDef style="flex: 0 0 17%;" mat-sort-header> Release Date </mat-header-cell>
+            <mat-cell *matCellDef="let element" style="flex: 0 0 17%;"> {{element.releaseDate}} </mat-cell>
           </ng-container>
 
           <ng-container matColumnDef="rating">
-            <mat-header-cell *matHeaderCellDef mat-sort-header> Rating </mat-header-cell>
-            <mat-cell *matCellDef="let element"> {{element.rating}} </mat-cell>
+            <mat-header-cell *matHeaderCellDef style="flex: 0 0 13%;" mat-sort-header> Rating </mat-header-cell>
+            <mat-cell *matCellDef="let element" style="flex: 0 0 13%;"> {{element.rating}} </mat-cell>
           </ng-container>
 
           <ng-container matColumnDef="genre">
-            <mat-header-cell *matHeaderCellDef mat-sort-header> Genre </mat-header-cell>
-            <mat-cell *matCellDef="let element"> {{element.genre}} </mat-cell>
+            <mat-header-cell *matHeaderCellDef> Genre </mat-header-cell>
+            <mat-cell *matCellDef="let element"> {{element.genre.join(', ')}} </mat-cell>
           </ng-container>
 
           <ng-container matColumnDef="link">
-            <mat-header-cell *matHeaderCellDef> Link </mat-header-cell>
-            <mat-cell *matCellDef="let element">
+            <mat-header-cell *matHeaderCellDef style="text-align: center"> Link </mat-header-cell>
+            <mat-cell *matCellDef="let element" style="text-align: center">
               <button mat-button (click)="goToMovie(element.link)">Watch</button>
             </mat-cell>
           </ng-container>
 
           <ng-container matColumnDef="like">
-            <mat-header-cell *matHeaderCellDef> Like </mat-header-cell>
-            <mat-cell *matCellDef="let element">
-              <button mat-button color="{{!element.liked ? 'basic' : 'primary'}}"
-                      (click)="likeMovie(element)">Like</button>
+            <mat-header-cell *matHeaderCellDef style="text-align: center"> Like </mat-header-cell>
+            <mat-cell *matCellDef="let element" style="text-align: center">
+              <button mat-icon-button color="{{!element.liked ? 'basic' : 'primary'}}"
+                      (click)="likeMovie(element)"><mat-icon>thumb_up</mat-icon></button>
             </mat-cell>
           </ng-container>
 
           <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
-          <!--<mat-accordion><mat-row *matRowDef="let row; columns: displayedColumns;"></mat-row></mat-accordion>-->
           <mat-row *matRowDef="let row; columns: displayedColumns;"></mat-row>
         </mat-table>
         <mat-paginator #paginatorMovie
@@ -82,32 +81,32 @@
           </ng-container>
 
           <ng-container matColumnDef="releaseDate">
-            <mat-header-cell *matHeaderCellDef mat-sort-header> Release Date </mat-header-cell>
-            <mat-cell *matCellDef="let element"> {{element.releaseDate}} </mat-cell>
+            <mat-header-cell *matHeaderCellDef style="flex: 0 0 17%;" mat-sort-header> Release Date </mat-header-cell>
+            <mat-cell *matCellDef="let element" style="flex: 0 0 17%;"> {{element.releaseDate}} </mat-cell>
           </ng-container>
 
           <ng-container matColumnDef="rating">
-            <mat-header-cell *matHeaderCellDef mat-sort-header> Rating </mat-header-cell>
-            <mat-cell *matCellDef="let element"> {{element.rating}} </mat-cell>
+            <mat-header-cell *matHeaderCellDef style="flex: 0 0 13%;" mat-sort-header> Rating </mat-header-cell>
+            <mat-cell *matCellDef="let element" style="flex: 0 0 13%;"> {{element.rating}} </mat-cell>
           </ng-container>
 
           <ng-container matColumnDef="genre">
-            <mat-header-cell *matHeaderCellDef mat-sort-header> Genre </mat-header-cell>
-            <mat-cell *matCellDef="let element"> {{element.genre}} </mat-cell>
+            <mat-header-cell *matHeaderCellDef> Genre </mat-header-cell>
+            <mat-cell *matCellDef="let element"> {{element.genre.join(', ')}} </mat-cell>
           </ng-container>
 
           <ng-container matColumnDef="link">
-            <mat-header-cell *matHeaderCellDef> Link </mat-header-cell>
-            <mat-cell *matCellDef="let element">
+            <mat-header-cell *matHeaderCellDef style="text-align: center"> Link </mat-header-cell>
+            <mat-cell *matCellDef="let element" style="text-align: center">
               <button mat-button (click)="goToMovie(element.link)">Watch</button>
             </mat-cell>
           </ng-container>
 
           <ng-container matColumnDef="like">
-            <mat-header-cell *matHeaderCellDef> Like </mat-header-cell>
-            <mat-cell *matCellDef="let element">
+            <mat-header-cell *matHeaderCellDef style="text-align: center"> Like </mat-header-cell>
+            <mat-cell *matCellDef="let element" style="text-align: center">
               <button mat-button color="{{!element.liked ? 'basic' : 'primary'}}"
-                      (click)="likeMovie(element)">Like</button>
+                      (click)="likeMovie(element)">Unike</button>
             </mat-cell>
           </ng-container>
 
