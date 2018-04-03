@@ -29,9 +29,9 @@ import { DashboardTvComponent } from './dashboard-tv/dashboard-tv.component';
     RouterModule.forChild([{
       path: '',
       pathMatch: 'full',
-      redirectTo: 'movie'
+      redirectTo: 'movies'
     }, {
-      path: 'movie',
+      path: 'movies',
       component: DashboardComponent,
     }, {
       path: 'tv',

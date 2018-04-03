@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import {FormControl, FormGroup, Validators, FormBuilder} from '@angular/forms';
+import {FormControl, FormGroup, Validators, FormBuilder, ValidatorFn} from '@angular/forms';
 import {Router} from '@angular/router';
 import {Http} from '@angular/http';
 import {AuthService} from '../../services/auth.service';
@@ -13,24 +13,38 @@ import {MoviesAppApiService} from '../../services/movies-app-api.service';
 
 export class AuthComponent implements OnInit {
 
-  signup_form: FormGroup;
+  signupForm: FormGroup;
+  loginForm: FormGroup;
+  usernameExists = true;
 
   constructor(private router: Router, private http: Http, private auth: AuthService,
               private api: MoviesAppApiService) {}
 
+  usernameExistsValidator(control: FormControl) {
+    console.log(this.usernameExists);
+    return this.usernameExists ? {'usernameExists': {value: control.value}} : null;
+  }
+
   signup() {
-    if (this.signup_form.valid) {
-      console.log(this.signup_form.value);
+    if (this.signupForm.valid) {
+      console.log(this.signupForm.value);
       const signupData = {
-        username: this.signup_form.value.username,
-        password: this.signup_form.value.password,
-        first_name: this.signup_form.value.firstName,
-        last_name: this.signup_form.value.lastName,
-        email: this.signup_form.value.email
+        username: this.signupForm.value.username,
+        password: this.signupForm.value.password,
+        first_name: this.signupForm.value.firstName,
+        last_name: this.signupForm.value.lastName,
+        email: this.signupForm.value.email
       };
       this.api.signup(signupData).subscribe(res => {
-        this.auth.login(signupData.username);
-        this.router.navigateByUrl('/dashboard');
+        console.log(res);
+        if (res._body.indexOf('exists') !== -1) {
+          this.usernameExists = true;
+          this.signupForm.controls.username.updateValueAndValidity();
+          console.log(this.usernameExists, this.signupForm);
+        } else {
+          this.auth.login(signupData.username);
+          // this.router.navigateByUrl('/dashboard');
+        }
       }, err => {
         console.log('Username already exists');
       });
@@ -41,15 +55,16 @@ export class AuthComponent implements OnInit {
 
   ngOnInit() {
     const user = this.auth.getUsername();
-    if (user !== null) {
+    if (user) {
       this.api.getUserDetails().subscribe(res => this.router.navigateByUrl('/dashboard'),
         err => console.log('Username not valid. Login again.'));
     }
-    this.signup_form = new FormGroup({
+    this.signupForm = new FormGroup({
       username: new FormControl('', [
         Validators.required,
-        Validators.minLength(8),
-        Validators.maxLength(20)
+        Validators.minLength(3),
+        Validators.maxLength(20),
+        this.usernameExistsValidator.bind(this)
       ]),
       firstName: new FormControl('', Validators.required),
       lastName: new FormControl('', Validators.required),
@@ -63,5 +78,21 @@ export class AuthComponent implements OnInit {
         Validators.email
       ]),
     });
+    this.loginForm = new FormGroup({
+      username: new FormControl('', [
+        Validators.required,
+        Validators.minLength(3),
+        Validators.maxLength(20)
+      ]),
+      password: new FormControl('', [
+        Validators.required,
+        Validators.minLength(8),
+        Validators.maxLength(20)
+      ])
+    });
+  }
+
+  func() {
+    console.log(this.usernameExists);
   }
 }

@@ -6,54 +6,58 @@
   </div>
   <!--auth div-->
   <div style="padding: 16px;">
-    <mat-card>
-      <!--<mat-card-title style="margin-bottom: 0">Log In</mat-card-title>-->
-      <!--<mat-card-content style="margin-bottom: 0">-->
-        <!--<form>-->
-          <!--<mat-form-field class="example-full-width">-->
-            <!--<input matInput placeholder="Username" class="form-control" formControlName="username">-->
-          <!--</mat-form-field>-->
-          <!--<mat-form-field class="example-full-width">-->
-            <!--<input matInput placeholder="Password" class="form-control" type="password" formControlName="password">-->
-          <!--</mat-form-field>-->
-          <!--<button mat-button color="primary">Log In</button>-->
-        <!--</form>-->
-      <!--</mat-card-content>-->
-      <!--&lt;!&ndash;<mat-card-actions style="margin-bottom: 0">&ndash;&gt;-->
-        <!--&lt;!&ndash;<button mat-button color="primary">Log In</button>&ndash;&gt;-->
-      <!--&lt;!&ndash;</mat-card-actions>&ndash;&gt;-->
-      <!--<mat-divider></mat-divider>-->
-      <mat-card-title>Sign Up</mat-card-title>
+    <mat-card style="padding-bottom: 24px">
+      <mat-card-title style="margin-bottom: 0; font-size: 22px; text-align: center;">Log In</mat-card-title>
+      <mat-card-content style="margin-bottom: 8px">
+        <form [formGroup]="loginForm">
+          <mat-form-field style="width: 39%">
+            <input matInput placeholder="Username" class="form-control" formControlName="username">
+          </mat-form-field>
+          <mat-form-field style="width: 39%">
+            <input matInput placeholder="Password" class="form-control" type="password" formControlName="password">
+          </mat-form-field>
+          <button mat-button color="primary" style="width: 19%">Log In</button>
+        </form>
+      </mat-card-content>
+      <!--<mat-card-actions style="margin-bottom: 0">-->
+        <!--<button mat-button color="primary">Log In</button>-->
+      <!--</mat-card-actions>-->
+      <mat-divider></mat-divider>
+      <mat-card-title style="margin: 32px 0 0 0; font-size: 22px; text-align: center;" >Sign Up</mat-card-title>
       <mat-card-content style="margin-bottom: 0">
-        <form [formGroup]="signup_form">
+        <form [formGroup]="signupForm">
           <div class="form-group">
-            <mat-form-field class="example-full-width">
+            <mat-form-field style="width: 49%">
               <input matInput placeholder="First Name" class="form-control" formControlName="firstName">
             </mat-form-field>
-            <mat-form-field class="example-full-width">
+            <mat-form-field style="width: 49%">
               <input matInput placeholder="Last Name" class="form-control" formControlName="lastName">
             </mat-form-field>
           </div>
           <div class="form-group">
-            <mat-form-field class="example-full-width" style="width: 100%">
-              <input matInput placeholder="Username" class="form-control" formControlName="username">
+            <mat-form-field style="width: 99%">
+              <input matInput placeholder="Username" (keyup)="usernameExists = false" class="form-control"
+                     formControlName="username">
+              <mat-error *ngIf="signupForm.get('username').hasError('usernameExists')">Username already exists</mat-error>
             </mat-form-field>
           </div>
           <div class="form-group">
-            <mat-form-field class="example-full-width" style="width: 100%">
+            <mat-form-field style="width: 99%">
               <input matInput placeholder="Password" class="form-control" type="password" formControlName="password">
+              <mat-hint>Between 8 and 20 characters</mat-hint>
             </mat-form-field>
           </div>
           <div class="form-group">
-            <mat-form-field class="example-full-width" style="width: 100%">
+            <mat-form-field style="width: 99%">
               <input matInput placeholder="Email" class="form-control" formControlName="email">
+              <mat-error *ngIf="signupForm.get('email').hasError('email')">Please enter a valid email address</mat-error>
             </mat-form-field>
           </div>
         </form>
       </mat-card-content>
-      <mat-card-actions style="display: flex; justify-content: space-around;">
-        <button mat-button>Clear</button>
+      <mat-card-actions style="display: flex; justify-content: space-around; flex-direction: row-reverse">
         <button mat-button color="primary" (click)="signup()" >Sign Up</button>
+        <button mat-button (click)="func()">Clear</button>
       </mat-card-actions>
     </mat-card>
   </div>
