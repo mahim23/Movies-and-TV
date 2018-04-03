@@ -14,6 +14,8 @@ import {
 } from '@angular/material';
 import {FormsModule} from '@angular/forms';
 import {HttpModule} from '@angular/http';
+import {AuthService} from 'app/services/auth.service';
+import {MoviesAppApiService} from 'app/services/movies-app-api.service';
 
 
 @NgModule({
@@ -28,7 +30,8 @@ import {HttpModule} from '@angular/http';
       component: DashboardComponent
     }])
   ],
-  declarations: [DashboardComponent]
+  declarations: [DashboardComponent],
+  providers: [AuthService, MoviesAppApiService]
 })
 export class HomeModule {
   constructor(private router: Router) { }

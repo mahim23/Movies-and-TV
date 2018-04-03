@@ -5,6 +5,8 @@ import { AppComponent } from './app.component';
 import { AppRoutingModule } from './app-routing.module';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import {MatToolbarModule} from '@angular/material';
+import {AuthService} from './services/auth.service';
+import {MoviesAppApiService} from './services/movies-app-api.service';
 
 
 @NgModule({
@@ -17,7 +19,7 @@ import {MatToolbarModule} from '@angular/material';
     BrowserAnimationsModule,
     MatToolbarModule
   ],
-  providers: [],
+  providers: [AuthService, MoviesAppApiService],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

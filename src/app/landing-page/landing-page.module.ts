@@ -5,6 +5,8 @@ import { RouterModule, Router } from '@angular/router';
 import {MatButtonModule, MatCardModule, MatDividerModule, MatInputModule} from '@angular/material';
 import {FormsModule, ReactiveFormsModule} from '@angular/forms';
 import {HttpModule} from '@angular/http';
+import {AuthService} from '../services/auth.service';
+import {MoviesAppApiService} from '../services/movies-app-api.service';
 
 @NgModule({
   imports: [
@@ -16,7 +18,8 @@ import {HttpModule} from '@angular/http';
       component: AuthComponent
     }])
   ],
-  declarations: [AuthComponent]
+  declarations: [AuthComponent],
+  providers: [AuthService, MoviesAppApiService]
 })
 export class LandingPageModule {
   constructor(private router: Router) { }

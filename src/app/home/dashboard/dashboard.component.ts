@@ -2,6 +2,8 @@ import {ChangeDetectorRef, Component, OnInit, ViewChild} from '@angular/core';
 import {MatTableDataSource, MatSort, MatPaginator} from '@angular/material';
 import {Http} from '@angular/http';
 import {Router} from '@angular/router';
+import {AuthService} from '../../services/auth.service';
+import {MoviesAppApiService} from '../../services/movies-app-api.service';
 
 @Component({
   selector: 'app-dashboard',
@@ -20,18 +22,18 @@ export class DashboardComponent implements OnInit {
   genres_list = ['All'];
   selectedGenre = 'All';
   searchQuery = '';
-  API_KEY = 'a7d5b9030fe407574db51d1001cb8c90&';
-  constructor(private cdRef: ChangeDetectorRef, private http: Http, private router: Router) {
 
-    this.username = localStorage.getItem('username');
+  constructor(private cdRef: ChangeDetectorRef, private http: Http, private router: Router,
+              private auth: AuthService, private api: MoviesAppApiService) {
+
+    this.username = this.auth.getUsername();
     if (this.username === null) {
       router.navigateByUrl('/auth');
     }
-    this.http.get('http://localhost:8000/api/user/' + this.username).subscribe(res => {
+    this.api.getUserDetails().subscribe(res => {
       this.user_details = res.json();
       this.favoritesArray = this.user_details.favorites;
-      this.http.get('https://api.themoviedb.org/3/genre/movie/list?api_key=' + this.API_KEY +
-        'language=en-US').subscribe(res => {
+      this.api.getMovieGenres().subscribe(res => {
         const g = res.json().genres;
         g.forEach(elem => this.genres_list.push(elem.name));
         this.genres = g;
@@ -65,15 +67,10 @@ export class DashboardComponent implements OnInit {
     const fav_list = [];
     const min_vote_count = 1500;
     const min_vote_average = 7.0;
-    this.http.get('https://api.themoviedb.org/3/discover/movie?api_key=' + this.API_KEY + 'language=en-US&' +
-      'sort_by=original_title.asc&include_adult=false&include_video=false&page=1&vote_count.gte=' + min_vote_count
-      + '&vote_average.gte=' + min_vote_average + '&with_original_language=en').subscribe(res => {
+    this.api.getMovieList(min_vote_count, min_vote_average, 1).subscribe(res => {
         const pages = res.json().total_pages;
         for (let i = 1; i <= pages; i++) {
-          this.http.get('https://api.themoviedb.org/3/discover/movie?api_key=' + this.API_KEY +
-            'language=en-US&sort_by=original_title.asc&include_adult=false&include_video=false&page=' + i +
-            '&vote_count.gte=' + min_vote_count + '&vote_average.gte=' + min_vote_average +
-            '&with_original_language=en').subscribe(res => {
+          this.api.getMovieList(min_vote_count, min_vote_average, i).subscribe(res => {
             const results = res.json().results;
             if (results) {
               results.forEach((movie) => {
@@ -102,9 +99,7 @@ export class DashboardComponent implements OnInit {
 
   likeMovie(movie) {
     const formData = new FormData();
-    formData.append('username', this.username);
-    formData.append('movie_id', movie.movie_id);
-    return this.http.post('http://localhost:8000/api/like', formData).subscribe(res => {
+    return this.api.likeMovie(movie.movie_id).subscribe(res => {
       console.log(res);
       if (movie.liked) {
         movie.liked = false;

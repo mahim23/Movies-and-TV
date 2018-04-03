@@ -2,6 +2,8 @@ import { Component, OnInit } from '@angular/core';
 import {FormControl, FormGroup, Validators, FormBuilder} from '@angular/forms';
 import {Router} from '@angular/router';
 import {Http} from '@angular/http';
+import {AuthService} from '../../services/auth.service';
+import {MoviesAppApiService} from '../../services/movies-app-api.service';
 
 @Component({
   selector: 'app-auth',
@@ -10,36 +12,38 @@ import {Http} from '@angular/http';
 })
 
 export class AuthComponent implements OnInit {
+
   signup_form: FormGroup;
-  constructor(private router: Router, private http: Http) {}
+
+  constructor(private router: Router, private http: Http, private auth: AuthService,
+              private api: MoviesAppApiService) {}
 
   signup() {
     if (this.signup_form.valid) {
       console.log(this.signup_form.value);
-      const formData = new FormData();
-      const signup_data = {
+      const signupData = {
         username: this.signup_form.value.username,
         password: this.signup_form.value.password,
         first_name: this.signup_form.value.firstName,
         last_name: this.signup_form.value.lastName,
         email: this.signup_form.value.email
       };
-      formData.append('user_details', JSON.stringify(signup_data));
-      this.http.post('http://localhost:8000/api/signup', formData).subscribe(res => {
-        localStorage.setItem('username', this.signup_form.value.username);
+      this.api.signup(signupData).subscribe(res => {
+        this.auth.login(signupData.username);
         this.router.navigateByUrl('/dashboard');
       }, err => {
         console.log('Username already exists');
       });
     } else {
-      console.log('Invalid');
+      console.log('Invalid form details');
     }
   }
 
   ngOnInit() {
-    const user = localStorage.getItem('username');
+    const user = this.auth.getUsername();
     if (user !== null) {
-      this.router.navigateByUrl('/dashboard');
+      this.api.getUserDetails().subscribe(res => this.router.navigateByUrl('/dashboard'),
+        err => console.log('Username not valid. Login again.'));
     }
     this.signup_form = new FormGroup({
       username: new FormControl('', [
@@ -56,7 +60,6 @@ export class AuthComponent implements OnInit {
       ]),
       email: new FormControl('', [
         Validators.required,
-        // Validators.pattern('[^ @]*@[^ @]*')
         Validators.email
       ]),
     });
