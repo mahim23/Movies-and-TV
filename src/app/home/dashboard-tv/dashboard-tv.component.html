@@ -1,11 +1,11 @@
 <div class="mat-elevation-z8">
   <mat-tab-group>
-    <mat-tab label="All">
+    <mat-tab label="All TV Shows">
       <div>
         <div style="margin: 0 16px -16px 16px; display: flex; justify-content: space-between;">
           <div style="width: 30%;">
             <mat-form-field style="width: 70%">
-              <input matInput placeholder="Search for a TV Series" [(ngModel)]="searchQuery" (keyup)="applyFilter('search')">
+              <input matInput placeholder="Search for a TV Shows" [(ngModel)]="searchQuery" (keyup)="applyFilter('search')">
               <button mat-button *ngIf="searchQuery" matSuffix mat-icon-button aria-label="Clear"
                       (click)="searchQuery=''; applyFilter('search')">
                 <mat-icon>close</mat-icon>

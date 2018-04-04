@@ -1,5 +1,26 @@
 <mat-toolbar color="primary" role="header" class="mat-elevation-z6">
-  Movies & TV Guide
+  <mat-toolbar-row>
+    <span>Movies & TV Guide</span>
+    <span style="flex: 1 1 auto"></span>
+    <div *ngIf="isLoggedIn | async" style="display: flex">
+        <button mat-button routerLink='/dashboard/movies'>Movies</button>
+        <button mat-button routerLink='/dashboard/tv'>TV</button>
+        <button mat-icon-button [matMenuTriggerFor]="menu">
+          <mat-icon>more_vert</mat-icon>
+        </button>
+        <mat-menu #menu="matMenu">
+          <button mat-menu-item disabled style="text-align: center">
+            <span style="color: rgba(0, 0, 0, 0.699)">Signed in as <strong>{{username | async}}</strong></span>
+          </button>
+          <mat-divider></mat-divider>
+          <button mat-menu-item (click)="logout()">
+            <mat-icon>power_settings_new</mat-icon>
+            <span>Logout</span>
+          </button>
+        </mat-menu>
+    </div>
+    
+  </mat-toolbar-row>
 </mat-toolbar>
 
 <router-outlet></router-outlet>

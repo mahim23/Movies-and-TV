@@ -28,7 +28,8 @@ export class DashboardComponent implements OnInit {
               private auth: AuthService, private api: MoviesAppApiService) {
 
     this.username = this.auth.getUsername();
-    if (this.username === null) {
+    console.log(this.username);
+    if (this.username === null || this.username === undefined) {
       router.navigateByUrl('/auth');
     }
     this.api.getUserDetails().subscribe(res => {
@@ -94,13 +95,11 @@ export class DashboardComponent implements OnInit {
             }
           });
         }
-        console.log(fav_list);
     });
   }
 
   likeMovie(movie) {
     return this.api.likeMovie(movie.movie_id).subscribe(res => {
-      console.log(res);
       if (movie.liked) {
         movie.liked = false;
         const list = [];
@@ -135,7 +134,6 @@ export class DashboardComponent implements OnInit {
         }
         return false;
       };
-      console.log(this.selectedGenre);
       let genre = this.selectedGenre.trim();
       genre = genre.toLowerCase();
       if (genre !== 'all') {
@@ -147,14 +145,12 @@ export class DashboardComponent implements OnInit {
       this.movies.filterPredicate = (data, filter) => {
         return data.name.toLowerCase().indexOf(filter.toLocaleLowerCase()) !== -1;
       };
-      console.log(this.searchQuery);
       this.movies.filter = this.searchQuery.trim().toLocaleLowerCase();
     }
   }
 
   goToMovie(link) {
     console.log(link);
-    console.log(this.movies);
   }
 
   ngOnInit() {

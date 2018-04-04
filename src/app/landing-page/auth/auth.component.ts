@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import {FormControl, FormGroup, Validators, FormBuilder, ValidatorFn} from '@angular/forms';
+import {FormControl, FormGroup, Validators, FormBuilder} from '@angular/forms';
 import {Router} from '@angular/router';
 import {Http} from '@angular/http';
 import {AuthService} from '../../services/auth.service';
@@ -15,19 +15,38 @@ export class AuthComponent implements OnInit {
 
   signupForm: FormGroup;
   loginForm: FormGroup;
-  usernameExists = true;
+  usernameExists = false;
+  loginPasswordHide = true;
+  signupPasswordHide = true;
+  invalidLogin = false;
 
   constructor(private router: Router, private http: Http, private auth: AuthService,
               private api: MoviesAppApiService) {}
 
   usernameExistsValidator(control: FormControl) {
-    console.log(this.usernameExists);
     return this.usernameExists ? {'usernameExists': {value: control.value}} : null;
+  }
+
+  login() {
+    this.invalidLogin = false;
+    if (this.loginForm.valid) {
+      this.api.login(this.loginForm.value.username, this.loginForm.value.password).subscribe(res => {
+        if (res["_body"].indexOf('Invalid') !== -1) {
+          this.invalidLogin = true;
+          this.loginForm.controls.password.reset();
+          this.loginForm.controls.password.markAsUntouched();
+          this.loginForm.controls.password.setErrors(null);
+        } else {
+          console.log('Login successful');
+          this.auth.login(this.loginForm.value.username);
+          this.router.navigateByUrl('/dashboard');
+        }
+      })
+    }
   }
 
   signup() {
     if (this.signupForm.valid) {
-      console.log(this.signupForm.value);
       const signupData = {
         username: this.signupForm.value.username,
         password: this.signupForm.value.password,
@@ -36,20 +55,17 @@ export class AuthComponent implements OnInit {
         email: this.signupForm.value.email
       };
       this.api.signup(signupData).subscribe(res => {
-        console.log(res);
-        if (res._body.indexOf('exists') !== -1) {
+        if (res["_body"].indexOf('exists') !== -1) {
           this.usernameExists = true;
           this.signupForm.controls.username.updateValueAndValidity();
-          console.log(this.usernameExists, this.signupForm);
         } else {
+          console.log('Signup successful');
           this.auth.login(signupData.username);
-          // this.router.navigateByUrl('/dashboard');
+          this.router.navigateByUrl('/dashboard');
         }
       }, err => {
-        console.log('Username already exists');
+        console.log('Could not complete the signup');
       });
-    } else {
-      console.log('Invalid form details');
     }
   }
 
@@ -57,7 +73,7 @@ export class AuthComponent implements OnInit {
     const user = this.auth.getUsername();
     if (user) {
       this.api.getUserDetails().subscribe(res => this.router.navigateByUrl('/dashboard'),
-        err => console.log('Username not valid. Login again.'));
+        err => console.log('Username not valid'));
     }
     this.signupForm = new FormGroup({
       username: new FormControl('', [
@@ -92,7 +108,7 @@ export class AuthComponent implements OnInit {
     });
   }
 
-  func() {
-    console.log(this.usernameExists);
+  clear() {
+    this.signupForm.reset();
   }
 }

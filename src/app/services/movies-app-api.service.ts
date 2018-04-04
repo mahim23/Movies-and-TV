@@ -32,7 +32,7 @@ export class MoviesAppApiService {
   login(username, password) {
     const formData = new FormData();
     formData.append('username', username);
-    // password = hash(passowrd);
+    // password = hash(password);
     formData.append('password', password);
     return this.http.post(this.MOVIES_APP_URL + 'login', formData);
   }
