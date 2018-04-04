@@ -49,7 +49,7 @@
           <ng-container matColumnDef="link">
             <mat-header-cell *matHeaderCellDef style="text-align: center"> Link </mat-header-cell>
             <mat-cell *matCellDef="let element" style="text-align: center">
-              <button mat-button (click)="goToMovie(element.link)">Watch</button>
+              <button mat-button (click)="goToTV(element.name)">Watch</button>
             </mat-cell>
           </ng-container>
 
@@ -76,8 +76,8 @@
         <mat-table #table [dataSource]="favorites" #favoritesSort="matSort" matSort>
 
           <ng-container matColumnDef="name">
-            <mat-header-cell *matHeaderCellDef mat-sort-header> Name </mat-header-cell>
-            <mat-cell *matCellDef="let element"> {{element.name}} </mat-cell>
+            <mat-header-cell *matHeaderCellDef style="flex: 0 0 30%;" mat-sort-header> Name </mat-header-cell>
+            <mat-cell *matCellDef="let element" style="flex: 0 0 30%;"> {{element.name}} </mat-cell>
           </ng-container>
 
           <ng-container matColumnDef="firstAirDate">
@@ -98,7 +98,7 @@
           <ng-container matColumnDef="link">
             <mat-header-cell *matHeaderCellDef style="text-align: center"> Link </mat-header-cell>
             <mat-cell *matCellDef="let element" style="text-align: center">
-              <button mat-button (click)="goToMovie(element.link)">Watch</button>
+              <button mat-button (click)="goToTV(element.name)">Watch</button>
             </mat-cell>
           </ng-container>
 

@@ -14,7 +14,7 @@ export class DashboardComponent implements OnInit {
 
   username = '';
   user_details;
-  displayedColumns = ['name', 'releaseDate', 'rating', 'genre', 'like'];
+  displayedColumns = ['name', 'releaseDate', 'rating', 'genre', 'link', 'like'];
   favoritesArray = [];
   movies;
   favorites;
@@ -23,6 +23,7 @@ export class DashboardComponent implements OnInit {
   genres_list = ['All'];
   selectedGenre = 'All';
   searchQuery = '';
+  amazon_search_link = 'https://www.amazon.in/s/ref=a9_asc_1?rh=i%3Aaps%2Ck%3A';
 
   constructor(private cdRef: ChangeDetectorRef, private http: Http, private router: Router,
               private auth: AuthService, private api: MoviesAppApiService) {
@@ -149,8 +150,10 @@ export class DashboardComponent implements OnInit {
     }
   }
 
-  goToMovie(link) {
-    console.log(link);
+  goToMovie(name) {
+    name = name + " movie";
+    const link = this.amazon_search_link + name + '&keywords=' + name;
+    window.open(link);
   }
 
   ngOnInit() {
