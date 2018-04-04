@@ -7,6 +7,7 @@ import {FormsModule, ReactiveFormsModule} from '@angular/forms';
 import {HttpModule} from '@angular/http';
 import {AuthService} from '../services/auth.service';
 import {MoviesAppApiService} from '../services/movies-app-api.service';
+import { SHAHashService } from '../services/shahash.service';
 
 @NgModule({
   imports: [
@@ -19,7 +20,7 @@ import {MoviesAppApiService} from '../services/movies-app-api.service';
     }])
   ],
   declarations: [AuthComponent],
-  providers: [AuthService, MoviesAppApiService]
+  providers: [AuthService, MoviesAppApiService, SHAHashService]
 })
 export class LandingPageModule {
   constructor(private router: Router) { }

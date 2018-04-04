@@ -4,6 +4,7 @@ import {Router} from '@angular/router';
 import {Http} from '@angular/http';
 import {AuthService} from '../../services/auth.service';
 import {MoviesAppApiService} from '../../services/movies-app-api.service';
+import {SHAHashService} from '../../services/shahash.service';
 
 @Component({
   selector: 'app-auth',
@@ -21,7 +22,7 @@ export class AuthComponent implements OnInit {
   invalidLogin = false;
 
   constructor(private router: Router, private http: Http, private auth: AuthService,
-              private api: MoviesAppApiService) {}
+              private api: MoviesAppApiService, private sha: SHAHashService) {}
 
   usernameExistsValidator(control: FormControl) {
     return this.usernameExists ? {'usernameExists': {value: control.value}} : null;
@@ -30,7 +31,8 @@ export class AuthComponent implements OnInit {
   login() {
     this.invalidLogin = false;
     if (this.loginForm.valid) {
-      this.api.login(this.loginForm.value.username, this.loginForm.value.password).subscribe(res => {
+      this.api.login(this.loginForm.value.username, this.sha.hash(this.loginForm.value.password))
+      .subscribe(res => {
         if (res["_body"].indexOf('Invalid') !== -1) {
           this.invalidLogin = true;
           this.loginForm.controls.password.reset();
@@ -49,7 +51,7 @@ export class AuthComponent implements OnInit {
     if (this.signupForm.valid) {
       const signupData = {
         username: this.signupForm.value.username,
-        password: this.signupForm.value.password,
+        password: this.sha.hash(this.signupForm.value.password),
         first_name: this.signupForm.value.firstName,
         last_name: this.signupForm.value.lastName,
         email: this.signupForm.value.email
@@ -58,6 +60,9 @@ export class AuthComponent implements OnInit {
         if (res["_body"].indexOf('exists') !== -1) {
           this.usernameExists = true;
           this.signupForm.controls.username.updateValueAndValidity();
+          this.signupForm.controls.password.reset();
+          this.signupForm.controls.password.markAsUntouched();
+          this.signupForm.controls.password.setErrors(null);
         } else {
           console.log('Signup successful');
           this.auth.login(signupData.username);
@@ -65,6 +70,9 @@ export class AuthComponent implements OnInit {
         }
       }, err => {
         console.log('Could not complete the signup');
+        this.signupForm.controls.password.reset();
+        this.signupForm.controls.password.markAsUntouched();
+        this.signupForm.controls.password.setErrors(null);
       });
     }
   }
