@@ -1,4 +1,4 @@
-# Movies App Front-end
+# Movies App
 
 A Web-app to make the hassle of finding a good movie or TV series easier. 
 
