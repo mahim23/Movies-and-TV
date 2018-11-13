@@ -1,6 +1,6 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { DashboardComponent } from './dashboard/dashboard.component';
+import { DashboardComponent, MovieDetailsDialog } from './dashboard/dashboard.component';
 import { RouterModule, Router } from '@angular/router';
 import { MatTableModule } from '@angular/material/table';
 import {
@@ -10,13 +10,16 @@ import {
   MatPaginatorModule,
   MatSelectModule,
   MatSortModule,
-  MatTabsModule
+  MatTabsModule,
+  MatDialogModule
 } from '@angular/material';
 import {FormsModule} from '@angular/forms';
 import {HttpModule} from '@angular/http';
 import {AuthService} from 'app/services/auth.service';
 import {MoviesAppApiService} from 'app/services/movies-app-api.service';
-import { DashboardTvComponent } from './dashboard-tv/dashboard-tv.component';
+import { DashboardTvComponent, TVDetailsDialog } from './dashboard-tv/dashboard-tv.component';
+import { IrsComponent } from './irs/irs.component';
+import { NgxJsonViewerModule } from 'ngx-json-viewer';
 
 
 @NgModule({
@@ -25,7 +28,7 @@ import { DashboardTvComponent } from './dashboard-tv/dashboard-tv.component';
     FormsModule,
     HttpModule,
     MatTableModule, MatButtonModule, MatSortModule, MatInputModule, MatPaginatorModule, MatSelectModule,
-    MatTabsModule, MatIconModule,
+    MatTabsModule, MatIconModule, MatDialogModule, NgxJsonViewerModule,
     RouterModule.forChild([{
       path: '',
       pathMatch: 'full',
@@ -36,10 +39,14 @@ import { DashboardTvComponent } from './dashboard-tv/dashboard-tv.component';
     }, {
       path: 'tv',
       component: DashboardTvComponent
-      }])
+    }, {
+      path: 'irs',
+      component: IrsComponent
+    }])
   ],
-  declarations: [DashboardComponent, DashboardTvComponent],
-  providers: [AuthService, MoviesAppApiService]
+  declarations: [DashboardComponent, DashboardTvComponent, MovieDetailsDialog, TVDetailsDialog, IrsComponent],
+  providers: [AuthService, MoviesAppApiService],
+  entryComponents: [MovieDetailsDialog, TVDetailsDialog]
 })
 
 export class HomeModule {

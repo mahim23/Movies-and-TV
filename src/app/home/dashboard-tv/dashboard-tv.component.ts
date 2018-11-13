@@ -1,7 +1,8 @@
-import {ChangeDetectorRef, Component, OnInit, ViewChild} from '@angular/core';
+import {ChangeDetectorRef, Component, OnInit, ViewChild, Inject} from '@angular/core';
 import {Router} from '@angular/router';
 import {Http} from '@angular/http';
-import {MatPaginator, MatTableDataSource, MatSort} from '@angular/material';
+import {MatPaginator, MatTableDataSource, MatSort, MatDialog, MatDialogRef, 
+  MAT_DIALOG_DATA} from '@angular/material';
 import {AuthService} from '../../services/auth.service';
 import {MoviesAppApiService} from '../../services/movies-app-api.service';
 
@@ -14,7 +15,7 @@ export class DashboardTvComponent implements OnInit {
 
   username = '';
   user_details;
-  displayedColumns = ['name', 'firstAirDate', 'rating', 'genre', 'link', 'like'];
+  displayedColumns = ['name', 'first_air_date', 'rating', 'genre', 'like'];
   favoritesArray = [];
   tv;
   favorites;
@@ -23,10 +24,9 @@ export class DashboardTvComponent implements OnInit {
   genres_list = ['All'];
   selectedGenre = 'All';
   searchQuery = '';
-  amazon_search_link = 'https://www.amazon.in/s/ref=a9_asc_1?rh=i%3Aaps%2Ck%3A';
 
   constructor(private cdRef: ChangeDetectorRef, private http: Http, private router: Router,
-              private auth: AuthService, private api: MoviesAppApiService) {
+    private auth: AuthService, private api: MoviesAppApiService, public dialog: MatDialog) {
 
     this.username = this.auth.getUsername();
     console.log(this.username);
@@ -35,13 +35,8 @@ export class DashboardTvComponent implements OnInit {
     }
     this.api.getUserDetails().subscribe(res => {
       this.user_details = res.json();
-      this.favoritesArray = this.user_details.favorite_tv;
-      this.api.getTVGenres().subscribe(res => {
-        const g = res.json().genres;
-        g.forEach(elem => this.genres_list.push(elem.name));
-        this.genres = g;
-        this.processTV();
-      });
+      this.favoritesArray = this.user_details.liked_tv;
+      this.processTV();
     }, err => {
       console.log('User not found');
       router.navigateByUrl('/auth');
@@ -55,46 +50,44 @@ export class DashboardTvComponent implements OnInit {
   @ViewChild('favoritesSort') sortFav: MatSort;
   @ViewChild('paginatorFav') paginatorFav: MatPaginator;
 
-  genre(ids) {
-    const g = [];
-    for (let i = 0; i < this.genres.length; i++) {
-      if (ids.indexOf(this.genres[i].id) !== -1) {
-        g.push(this.genres[i].name);
-      }
+  insertIntoGenres(genre) {
+    if (this.genres_list.indexOf(genre) === -1) {
+      this.genres_list.push(genre);
     }
-    return g;
   }
 
   processTV() {
     const list = [];
     const fav_list = [];
-    const min_vote_count = 250;
-    const min_vote_average = 5;
-    this.api.getTVList(min_vote_count, min_vote_average, 1).subscribe(res => {
-      const pages = res.json().total_pages;
-      for (let i = 1; i <= pages; i++) {
-        this.api.getTVList(min_vote_count, min_vote_average, i).subscribe(res => {
-          const results = res.json().results;
-          if (results) {
-            results.forEach((tv) => {
-              const liked = this.favoritesArray.indexOf(tv.id.toString()) !== -1;
-              const m = {
-                tv_id: tv.id,
-                name: tv.original_name,
-                rating: tv.vote_average,
-                firstAirDate: tv.first_air_date,
-                liked: liked,
-                genre: this.genre(tv.genre_ids)
-              };
-              if (liked) {
-                fav_list.push(m);
-              }
-              list.push(m);
-            });
-            this.tv.data = list;
-            this.favorites.data = fav_list;
+    this.api.getTVList().subscribe(res => {
+      const results = res.json().tv;
+      if (results) {
+        results.forEach((tv) => {
+          const liked = this.favoritesArray.indexOf(tv.id) !== -1;
+          tv.genres.forEach(genre => {
+            this.insertIntoGenres(genre.name);
+          });
+          const m = {
+            tv_id: tv.id,
+            name: tv.title,
+            plot: tv.plot,
+            rating: tv.ratings,
+            first_air_date: tv.start_date,
+            no_of_seasons: tv.no_of_seasons,
+            no_of_episodes: tv.no_of_episodes,
+            liked: liked,
+            genres: tv.genres.map(x => x.name),
+            directors: tv.directors.map(x => x.name),
+            cast: tv.cast.map(x => x.name),
+            production_companies: tv.production_companies.map(x => x.name)
+          };
+          if (liked) {
+            fav_list.push(m);
           }
+          list.push(m);
         });
+        this.tv.data = list;
+        this.favorites.data = fav_list;
       }
     });
   }
@@ -130,8 +123,8 @@ export class DashboardTvComponent implements OnInit {
   applyFilter(type) {
     if (type === 'genre') {
       this.tv.filterPredicate = (data, filter) => {
-        for (let i = 0; i < data.genre.length; i++) {
-          if (data.genre[i].toLowerCase() === filter) { return true; }
+        for (let i = 0; i < data.genres.length; i++) {
+          if (data.genres[i].toLowerCase() === filter) { return true; }
         }
         return false;
       };
@@ -150,13 +143,56 @@ export class DashboardTvComponent implements OnInit {
     }
   }
 
-  goToTV(name) {
-    name = name + " dvd";
-    const link = this.amazon_search_link + name + '&keywords=' + name;
-    window.open(link);
+  tvDetails(tv) {
+    let dialogRef = this.dialog.open(TVDetailsDialog, {
+      width: '750px',
+      data: { tv: tv }
+    });
   }
 
   ngOnInit() {
   }
 
 }
+
+@Component({
+  selector: 'tv-details-dialog',
+  template: `
+    <div>
+      <h3 class="title">{{tv.name}}</h3>
+      <div><strong>Plot: </strong>{{tv.plot}}</div>
+      <div><strong>First Air Date: </strong>{{tv.first_air_date}}</div>
+      <div><strong>Rating: </strong>{{tv.rating}}</div>
+      <div><strong>Number of Seasons: </strong>{{tv.no_of_seasons}}</div>
+      <div><strong>Number of Episodes: </strong>{{tv.no_of_episodes}}</div>
+      <div><strong>Genres: </strong>{{tv.genres.join(", ")}}</div>
+      <div><strong>Cast: </strong>{{tv.cast.join(", ")}}</div>
+      <div><strong>Production Companies: </strong>{{tv.production_companies.join(", ")}}</div>
+      <button mat-button style="float: right" (click)="onNoClick()">Close</button>
+
+      <style>
+        div {
+          padding: 8px;
+        }
+        .title {
+          text-align: center;
+          padding: 4px;
+        }
+      </style>
+    </div>
+  `
+})
+export class TVDetailsDialog {
+  tv;
+  constructor(
+    public dialogRef: MatDialogRef<TVDetailsDialog>,
+    @Inject(MAT_DIALOG_DATA) public data: any) {
+      this.tv = data.tv;
+    }
+
+  onNoClick(): void {
+    this.dialogRef.close();
+  }
+
+}
+
