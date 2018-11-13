@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import {Router} from '@angular/router';
 import {AuthService} from '../../services/auth.service';
 import {MoviesAppApiService} from '../../services/movies-app-api.service';
 
@@ -11,9 +12,20 @@ export class IrsComponent implements OnInit {
 
   searchQuery = "";
   irsResults = [];
+  username;
 
-  constructor(private auth: AuthService, private api: MoviesAppApiService) {
-
+  constructor(private router: Router, private auth: AuthService, private api: MoviesAppApiService) {
+    this.username = this.auth.getUsername();
+    console.log(this.username);
+    if (this.username === null || this.username === undefined) {
+      router.navigateByUrl('/auth');
+    }
+    this.api.getUserDetails().subscribe(res => {
+      console.log("User valid");
+    }, err => {
+      console.log('User not found');
+      router.navigateByUrl('/auth');
+    });
   }
 
   runQuery() {

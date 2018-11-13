@@ -1,10 +1,11 @@
 <mat-toolbar color="primary" role="header" class="mat-elevation-z6">
   <mat-toolbar-row>
-    <span>Movies & TV Guide</span>
+    <span>Movies & TV</span>
     <span style="flex: 1 1 auto"></span>
     <div *ngIf="isLoggedIn | async" style="display: flex">
         <button mat-button routerLink='/dashboard/movies'>Movies</button>
         <button mat-button routerLink='/dashboard/tv'>TV</button>
+        <button mat-button routerLink='/dashboard/irs'>IRS</button>
         <button mat-icon-button [matMenuTriggerFor]="menu">
           <mat-icon>more_vert</mat-icon>
         </button>
