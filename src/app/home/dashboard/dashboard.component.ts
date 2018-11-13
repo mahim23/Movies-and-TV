@@ -1,5 +1,6 @@
-import {ChangeDetectorRef, Component, OnInit, ViewChild} from '@angular/core';
-import {MatTableDataSource, MatSort, MatPaginator} from '@angular/material';
+import {ChangeDetectorRef, Component, OnInit, ViewChild, Inject} from '@angular/core';
+import {MatTableDataSource, MatSort, MatPaginator, MatDialog, MatDialogRef, 
+        MAT_DIALOG_DATA} from '@angular/material';
 import {Http} from '@angular/http';
 import {Router} from '@angular/router';
 import {AuthService} from '../../services/auth.service';
@@ -14,7 +15,7 @@ export class DashboardComponent implements OnInit {
 
   username = '';
   user_details;
-  displayedColumns = ['name', 'releaseDate', 'rating', 'genre', 'link', 'like'];
+  displayedColumns = ['name', 'release_date', 'rating', 'genre', 'like'];
   favoritesArray = [];
   movies;
   favorites;
@@ -23,10 +24,9 @@ export class DashboardComponent implements OnInit {
   genres_list = ['All'];
   selectedGenre = 'All';
   searchQuery = '';
-  amazon_search_link = 'https://www.amazon.in/s/ref=a9_asc_1?rh=i%3Aaps%2Ck%3A';
 
   constructor(private cdRef: ChangeDetectorRef, private http: Http, private router: Router,
-              private auth: AuthService, private api: MoviesAppApiService) {
+              private auth: AuthService, private api: MoviesAppApiService, public dialog: MatDialog) {
 
     this.username = this.auth.getUsername();
     console.log(this.username);
@@ -35,13 +35,9 @@ export class DashboardComponent implements OnInit {
     }
     this.api.getUserDetails().subscribe(res => {
       this.user_details = res.json();
-      this.favoritesArray = this.user_details.favorite_movies;
-      this.api.getMovieGenres().subscribe(res => {
-        const g = res.json().genres;
-        g.forEach(elem => this.genres_list.push(elem.name));
-        this.genres = g;
-        this.processMovies();
-      });
+      this.favoritesArray = this.user_details.liked_movies;
+      console.log(this.favoritesArray);
+      this.processMovies();
     }, err => {
       console.log('User not found');
       router.navigateByUrl('/auth');
@@ -55,47 +51,46 @@ export class DashboardComponent implements OnInit {
   @ViewChild('favoritesSort') sortFav: MatSort;
   @ViewChild('paginatorFav') paginatorFav: MatPaginator;
 
-  genre(ids) {
-    const g = [];
-    for (let i = 0; i < this.genres.length; i++) {
-      if (ids.indexOf(this.genres[i].id) !== -1) {
-        g.push(this.genres[i].name);
-      }
+  insertIntoGenres(genre) {
+    if (this.genres_list.indexOf(genre) === -1) {
+      this.genres_list.push(genre);
     }
-    return g;
   }
 
   processMovies() {
     const list = [];
     const fav_list = [];
-    const min_vote_count = 1500;
-    const min_vote_average = 7.0;
-    this.api.getMovieList(min_vote_count, min_vote_average, 1).subscribe(res => {
-        const pages = res.json().total_pages;
-        for (let i = 1; i <= pages; i++) {
-          this.api.getMovieList(min_vote_count, min_vote_average, i).subscribe(res => {
-            const results = res.json().results;
-            if (results) {
-              results.forEach((movie) => {
-                const liked = this.favoritesArray.indexOf(movie.id.toString()) !== -1;
-                const m = {
-                  movie_id: movie.id,
-                  name: movie.original_title,
-                  rating: movie.vote_average,
-                  releaseDate: movie.release_date,
-                  liked: liked,
-                  genre: this.genre(movie.genre_ids)
-                };
-                if (liked) {
-                  fav_list.push(m);
-                }
-                list.push(m);
-              });
-              this.movies.data = list;
-              this.favorites.data = fav_list;
-            }
+    this.api.getMovieList().subscribe(res => {
+      const results = res.json().movies;
+      console.log(results[1]);
+      if (results) {
+        results.forEach((movie) => {
+          const liked = this.favoritesArray.indexOf(movie.id) !== -1;
+          movie.genres.forEach(genre => {
+            this.insertIntoGenres(genre.name);
           });
-        }
+          const m = {
+            movie_id: movie.id,
+            name: movie.title,
+            rating: movie.ratings,
+            runtime: movie.runtime,
+            release_date: movie.release_date,
+            liked: liked,
+            plot: movie.plot,
+            genres: movie.genres.map(x => x.name),
+            directors: movie.directors.map(x => x.name),
+            cast: movie.cast.map(x => x.name),
+            production_companies: movie.production_companies.map(x => x.name)
+          };
+          if (liked) {
+            fav_list.push(m);
+          }
+          list.push(m);
+        });
+        this.movies.data = list;
+        this.favorites.data = fav_list;
+      }
+      console.log(this.genres_list);
     });
   }
 
@@ -130,8 +125,8 @@ export class DashboardComponent implements OnInit {
   applyFilter(type) {
     if (type === 'genre') {
       this.movies.filterPredicate = (data, filter) => {
-        for (let i = 0; i < data.genre.length; i++) {
-          if (data.genre[i].toLowerCase() === filter) { return true; }
+        for (let i = 0; i < data.genres.length; i++) {
+          if (data.genres[i].toLowerCase() === filter) { return true; }
         }
         return false;
       };
@@ -150,13 +145,57 @@ export class DashboardComponent implements OnInit {
     }
   }
 
-  goToMovie(name) {
-    name = name + " movie";
-    const link = this.amazon_search_link + name + '&keywords=' + name;
-    window.open(link);
+  movieDetails(movie) {
+    console.log("2: ", movie);
+    let dialogRef = this.dialog.open(MovieDetailsDialog, {
+      width: '750px',
+      data: { movie: movie }
+    });
   }
 
   ngOnInit() {
+  }
+
+}
+
+
+@Component({
+  selector: 'movie-details-dialog',
+  template: `
+    <div>
+      <h3 class="title">{{movie.name}}</h3>
+      <div><strong>Plot: </strong>{{movie.plot}}</div>
+      <div><strong>Release Date: </strong>{{movie.release_date}}</div>
+      <div><strong>Runtime: </strong>{{movie.runtime}}</div>
+      <div><strong>Rating: </strong>{{movie.rating}}</div>
+      <div><strong>Genres: </strong>{{movie.genres.join(", ")}}</div>
+      <div><strong>Cast: </strong>{{movie.cast.join(", ")}}</div>
+      <div><strong>Directors: </strong>{{movie.directors.join(", ")}}</div>
+      <div><strong>Production Companies: </strong>{{movie.production_companies.join(", ")}}</div>
+      <button mat-button style="float: right" (click)="onNoClick()">Close</button>
+
+      <style>
+        div {
+          padding: 8px;
+        }
+        .title {
+          text-align: center;
+          padding: 4px;
+        }
+      </style>
+    </div>
+  `
+})
+export class MovieDetailsDialog {
+  movie;
+  constructor(
+    public dialogRef: MatDialogRef<MovieDetailsDialog>,
+    @Inject(MAT_DIALOG_DATA) public data: any) {
+      this.movie = data.movie;
+    }
+
+  onNoClick(): void {
+    this.dialogRef.close();
   }
 
 }

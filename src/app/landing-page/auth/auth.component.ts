@@ -31,7 +31,8 @@ export class AuthComponent implements OnInit {
   login() {
     this.invalidLogin = false;
     if (this.loginForm.valid) {
-      this.api.login(this.loginForm.value.username, this.sha.hash(this.loginForm.value.password))
+      // this.api.login(this.loginForm.value.username, this.sha.hash(this.loginForm.value.password))
+      this.api.login(this.loginForm.value.username, this.loginForm.value.password)
       .subscribe(res => {
         if (res["_body"].indexOf('Invalid') !== -1) {
           this.invalidLogin = true;

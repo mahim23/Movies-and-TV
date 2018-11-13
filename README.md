@@ -1,10 +1,10 @@
-# Movies App
+# Movies and TV
 
-A Web-app to make the hassle of finding a good movie or TV series easier. 
+A Web Application to make the hassle of finding a good Movie or TV-series easier. 
 
-This repository has the code for the front-end of the app. The back-end can be found at [Movies and TV backend](https://github.com/mahim23/Movies-and-TV-Backend).
+This repository contains the code for the front-end of the app. The back-end can be found at [Movies and TV backend](https://github.com/mahim23/Movies-and-TV-Backend).
 
-This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 1.6.8.
+This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version `1.6.8`.
 
 ## Development server
 

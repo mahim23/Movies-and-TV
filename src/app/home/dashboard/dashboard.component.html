@@ -28,12 +28,15 @@
         <mat-table #table [dataSource]="movies" #movieSort="matSort" matSort>
           <ng-container matColumnDef="name">
             <mat-header-cell *matHeaderCellDef style="flex: 0 0 30%;" mat-sort-header> Name </mat-header-cell>
-            <mat-cell *matCellDef="let element" style="flex: 0 0 30%;"> {{element.name}} </mat-cell>
+            <mat-cell *matCellDef="let element" style="flex: 0 0 30%; cursor: pointer;" 
+                      (click)="movieDetails(element)"> 
+              {{element.name}} 
+            </mat-cell>
           </ng-container>
 
-          <ng-container matColumnDef="releaseDate">
+          <ng-container matColumnDef="release_date">
             <mat-header-cell *matHeaderCellDef style="flex: 0 0 17%;" mat-sort-header> Release Date </mat-header-cell>
-            <mat-cell *matCellDef="let element" style="flex: 0 0 17%;"> {{element.releaseDate}} </mat-cell>
+            <mat-cell *matCellDef="let element" style="flex: 0 0 17%"> {{element.release_date}} </mat-cell>
           </ng-container>
 
           <ng-container matColumnDef="rating">
@@ -43,14 +46,7 @@
 
           <ng-container matColumnDef="genre">
             <mat-header-cell *matHeaderCellDef> Genre </mat-header-cell>
-            <mat-cell *matCellDef="let element"> {{element.genre.join(', ')}} </mat-cell>
-          </ng-container>
-
-          <ng-container matColumnDef="link">
-            <mat-header-cell *matHeaderCellDef style="text-align: center"> Link </mat-header-cell>
-            <mat-cell *matCellDef="let element" style="text-align: center">
-              <button mat-button (click)="goToMovie(element.name)">Watch</button>
-            </mat-cell>
+            <mat-cell *matCellDef="let element"> {{element.genres.join(", ")}} </mat-cell>
           </ng-container>
 
           <ng-container matColumnDef="like">
@@ -77,12 +73,15 @@
 
           <ng-container matColumnDef="name">
             <mat-header-cell *matHeaderCellDef style="flex: 0 0 30%;" mat-sort-header> Name </mat-header-cell>
-            <mat-cell *matCellDef="let element" style="flex: 0 0 30%;"> {{element.name}} </mat-cell>
+            <mat-cell *matCellDef="let element" style="flex: 0 0 30%; cursor: pointer;"
+              (click)="movieDetails(element)">
+              {{element.name}} 
+            </mat-cell>
           </ng-container>
 
-          <ng-container matColumnDef="releaseDate">
+          <ng-container matColumnDef="release_date">
             <mat-header-cell *matHeaderCellDef style="flex: 0 0 17%;" mat-sort-header> Release Date </mat-header-cell>
-            <mat-cell *matCellDef="let element" style="flex: 0 0 17%;"> {{element.releaseDate}} </mat-cell>
+            <mat-cell *matCellDef="let element" style="flex: 0 0 17%;"> {{element.release_date}} </mat-cell>
           </ng-container>
 
           <ng-container matColumnDef="rating">
@@ -92,14 +91,7 @@
 
           <ng-container matColumnDef="genre">
             <mat-header-cell *matHeaderCellDef> Genre </mat-header-cell>
-            <mat-cell *matCellDef="let element"> {{element.genre.join(', ')}} </mat-cell>
-          </ng-container>
-
-          <ng-container matColumnDef="link">
-            <mat-header-cell *matHeaderCellDef style="text-align: center"> Link </mat-header-cell>
-            <mat-cell *matCellDef="let element" style="text-align: center">
-              <button mat-button (click)="goToMovie(element.name)">Watch</button>
-            </mat-cell>
+            <mat-cell *matCellDef="let element"> {{element.genres.join(', ')}} </mat-cell>
           </ng-container>
 
           <ng-container matColumnDef="like">

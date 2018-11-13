@@ -4,7 +4,8 @@ import { NgModule } from '@angular/core';
 import { AppComponent } from './app.component';
 import { AppRoutingModule } from './app-routing.module';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import {MatToolbarModule, MatButtonModule, MatMenuModule, MatIconModule, MatDividerModule} from '@angular/material';
+import {MatToolbarModule, MatButtonModule, MatMenuModule, MatIconModule, 
+  MatDividerModule} from '@angular/material';
 import {AuthService} from './services/auth.service';
 import {MoviesAppApiService} from './services/movies-app-api.service';
 
