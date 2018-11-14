@@ -11,7 +11,8 @@ import {
   MatSelectModule,
   MatSortModule,
   MatTabsModule,
-  MatDialogModule
+  MatDialogModule,
+  MatExpansionModule
 } from '@angular/material';
 import {FormsModule} from '@angular/forms';
 import {HttpModule} from '@angular/http';
@@ -28,7 +29,7 @@ import { NgxJsonViewerModule } from 'ngx-json-viewer';
     FormsModule,
     HttpModule,
     MatTableModule, MatButtonModule, MatSortModule, MatInputModule, MatPaginatorModule, MatSelectModule,
-    MatTabsModule, MatIconModule, MatDialogModule, NgxJsonViewerModule,
+    MatTabsModule, MatIconModule, MatDialogModule, NgxJsonViewerModule, MatExpansionModule,
     RouterModule.forChild([{
       path: '',
       pathMatch: 'full',

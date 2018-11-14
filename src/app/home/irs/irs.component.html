@@ -9,7 +9,24 @@
     </mat-form-field>
     <button mat-icon-button (click)="runQuery()"><mat-icon>search</mat-icon></button>      
   </div>
-  <div>
+  <!-- <div>
     <ngx-json-viewer [json]="irsResults" [expanded]="false"></ngx-json-viewer>
-  </div>
+  </div> -->
 </div>
+
+<mat-accordion>
+  <mat-expansion-panel *ngFor="let movie of irsResults">
+    <mat-expansion-panel-header>
+      <mat-panel-title style="width: 25%;">
+        {{movie.title}}
+      </mat-panel-title>
+      <mat-panel-description style="width: 70%;">
+        {{movie.overview | slice:0:125}}{{movie.overview.length > 125 ? ' ...' : ''}}
+      </mat-panel-description>
+    </mat-expansion-panel-header>
+
+    <ngx-json-viewer [json]="movie" [expanded]="false"></ngx-json-viewer>
+
+  </mat-expansion-panel>
+</mat-accordion>
+
